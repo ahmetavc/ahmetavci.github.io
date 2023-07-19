@@ -23,9 +23,9 @@ email: ahmetabdullahavci@gmail.com
 description: >- # this means to ignore newlines until "baseurl:"
   I am a software engineer, welcome to my website!
 baseurl: "" # the subpath of your site, e.g. /blog
-url: "" # the base hostname & protocol for your site, e.g. http://example.com
-twitter_username: jekyllrb
-github_username:  jekyll
+url: "https://www.avciahmet.com" # the base hostname & protocol for your site, e.g. http://example.com
+twitter_username: ahmetavcc
+github_username:  ahmetavc
 
 # Build settings
 theme: minima
