@@ -1,17 +1,17 @@
 ---
 layout: post
-title:  "How to use GitOps with ArgoCD"
-date:   2020-12-25 22:05:26 +0300
+title: "How to use GitOps with ArgoCD"
+date: 2020-12-25 22:05:26 +0300
 categories: jekyll update
 ---
+
 In this blog post, we are going to explain what GitOps and ArgoCD are and how they can be useful for DevOps process by showing you how we use them at Trendyol Seller Ads team.
 
 We are not going to go through the setup process of our CI/CD pipeline and ArgoCD in this blogpost. Main focus will be on how we configure and use GitOps and ArgoCD as developers.
 
 Let's start by explaining the fancy terms;
 
-What is GitOps and ArgoCD?
-==========================
+# What is GitOps and ArgoCD?
 
 GitOps is a way of implementing Continuous Deployment for cloud applications. It allows developers to deploy faster and more often by using tools that developers are already familiar with such as Git and other CD tools.
 
@@ -21,14 +21,13 @@ And this is where ArgoCD comes into play. It completes the most crucial step of 
 
 Some of the best features of ArgoCD are;
 
--   Declarative and version controlled application deployments
--   Automated deployment of applications to specified target environments
--   Support for Kustomize and Helm application declarations
--   CLI and a sweet web UI for Kubernetes resources
--   PreSync, Sync, PostSync hooks to support complex application rollouts such as blue/green and canary upgrades
+- Declarative and version controlled application deployments
+- Automated deployment of applications to specified target environments
+- Support for Kustomize and Helm application declarations
+- CLI and a sweet web UI for Kubernetes resources
+- PreSync, Sync, PostSync hooks to support complex application rollouts such as blue/green and canary upgrades
 
-Why Have We Decided to Use ArgoCD?
-==================================
+# Why Have We Decided to Use ArgoCD?
 
 The biggest drawback in our CI/CD pipeline was that configuration management of applications across environments and clusters. Whenever there was a change or new feature for our applications, we had to apply these changes manually or maintain jobs with specific kubeconfigs for each cluster to automatically make deployments.
 
@@ -36,22 +35,21 @@ We wanted to automize all of these processes and become closer to Continuous Dep
 
 Thanks to ArgoCD;
 
--   We are able to make deployments to different environments and clusters from a single source of truth.
--   Deployment, ConfigMap or Istio config changes are reflected to all production clusters dynamically and instantly.
--   It provides us the two sided syncing feature. ArgoCD recognizes the changes on our configurations and start syncing Kubernetes and also, it notices any deviation on the Kubernetes side and sync it back to the desired state. Without ArgoCD, Kubernetes resources would be unsync until the next deployment.
--   If we want to relocate an application from a cluster to another cluster (maintenance work might happen by DevOps team), just one line change in the target clusters works.
--   We are able to follow sync situation of our desired and current status of applications and be aware instantly of any undesired event on Kubernetes resources with ArgoCD UI and it's notifications.
--   When we want to increase the number of replicas, we had to wait for Gitlab jobs in the pipeline to schedule and run. Now it's just a change in the Git repository and we are able to scale up instantly.
+- We are able to make deployments to different environments and clusters from a single source of truth.
+- Deployment, ConfigMap or Istio config changes are reflected to all production clusters dynamically and instantly.
+- It provides us the two sided syncing feature. ArgoCD recognizes the changes on our configurations and start syncing Kubernetes and also, it notices any deviation on the Kubernetes side and sync it back to the desired state. Without ArgoCD, Kubernetes resources would be unsync until the next deployment.
+- If we want to relocate an application from a cluster to another cluster (maintenance work might happen by DevOps team), just one line change in the target clusters works.
+- We are able to follow sync situation of our desired and current status of applications and be aware instantly of any undesired event on Kubernetes resources with ArgoCD UI and it's notifications.
+- When we want to increase the number of replicas, we had to wait for Gitlab jobs in the pipeline to schedule and run. Now it's just a change in the Git repository and we are able to scale up instantly.
 
-How Do We Use GitOps with ArgoCD?
-=================================
+# How Do We Use GitOps with ArgoCD?
 
 We have project repositories for each application in our team. Their responsibilities are;
 
--   hold the source code and make static analysis on it
--   compile and run unit & integration tests
--   package the application and run automation tests
--   create a deployable version of the application
+- hold the source code and make static analysis on it
+- compile and run unit & integration tests
+- package the application and run automation tests
+- create a deployable version of the application
 
 And we have one global Manifest repository to manage infrastructure configurations of these applications. We manage where to deploy our apps and with what settings in this repository.
 
@@ -81,8 +79,7 @@ During deployments, thanks to the beautiful ArgoCD UI, we follow the sync situat
 
 Let's talk more about our Manifest repository and how we configure ArgoCD.
 
-How We Configured Manifest Repository
-=====================================
+# How We Configured Manifest Repository
 
 This is how a part of our Manifest repository looks like;
 
@@ -95,9 +92,9 @@ There are three different type of directories in here;
 1.  .common: We keep ConfigMap and Secret resources in this directory. There may be Secrets or configurations that are shared in all clusters or that can vary from cluster to cluster. For instance, in every cluster there has to be a Docker registry secret, or monitoring can be enabled in one cluster whilst disabled in another
 2.  .apps: It is a helm chart that creates "app of apps of apps structure" in the ArgoCD. It is a recommended way, called [Apps of App pattern](https://argoproj.github.io/argo-cd/operator-manual/cluster-bootstrapping/#app-of-apps-pattern), of configuring ArgoCD with different applications and environments. We use Golang template feature of helm to specify configuration of each app.
 
--   .apps/values.yaml: We keep cluster information and deployment destination of our apps in this file. A part of this file is as follows;
+- .apps/values.yaml: We keep cluster information and deployment destination of our apps in this file. A part of this file is as follows;
 
--   .apps/templates/application.yaml: This is where we use Golang templates to apply "apps of app" pattern in ArgoCD by using the information in the values.yaml.
+- .apps/templates/application.yaml: This is where we use Golang templates to apply "apps of app" pattern in ArgoCD by using the information in the values.yaml.
 
 Let's have a look at our design on ArgoCD UI;
 
@@ -138,11 +135,8 @@ And in the overlays, we have different configurations for different deployment e
 
 So this is how we configure our Manifest repository to manage Kubernetes resources and ArgoCd.
 
-Conclusion and What is Next with ArgoCD?
-========================================
+# Conclusion and What is Next with ArgoCD?
 
 GitOps allowed us to deploy faster and more often, and ArgoCD helped with adopting the GitOps techniques. Also it allowed us to have better control over our Kubernetes resources and events thanks to its nice UI.
 
 Now our next target is to use canary and blue/green deployment feature of ArgoCD to have more safe and resilient deployments for our applications.
-
-, who supported me with his valuable feedbacks during the writing of this article.
