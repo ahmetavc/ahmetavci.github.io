@@ -2,7 +2,7 @@
 layout: post
 title: "How to use GitOps with ArgoCD"
 date: 2020-12-25 22:05:26 +0300
-categories: jekyll update
+categories: devops
 ---
 
 In this blog post, we are going to explain what GitOps and ArgoCD are and how they can be useful for DevOps process by showing you how we use them at Trendyol Seller Ads team.

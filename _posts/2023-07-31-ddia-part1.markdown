@@ -1,0 +1,168 @@
+---
+layout: post
+title: "Designing Data-Intensive Applications: Part 1: Reliable, Scalable and Maintainable Applications"
+date: 2023-07-29 22:00:00 +0300
+categories: backend
+---
+
+# Part 1: Reliable, Scalable and Maintainable Applications
+
+In the era of data intensive applications, designing and maintaining applications that are reliable, scalable and maintainable has become crucial. In this blog post, we'll look into these core aspects of data systems.
+
+## Reliability
+
+Reliability of a system signifies its ability to function consistently over time, providing expected outputs under a variety of conditions. It refers to the capacity of a system to keep performing its intended tasks, even when faced with unexpected situations or faults.
+
+A reliable system is expected to carry out its functions correctly, tolerate erroneous input gracefully and prevent unauthorized access. In essence, it should continue to operate correctly even if things go wrong.
+
+Faults, as we term them, are the elements that can trigger failures in a system, leading it to not perform its expected functionality. To test the reliability of a system, intentionally introducing faults can be an effective method to gauge whether the system can withstand them or not. A popular example of this is the 'Chaos Monkey' system used by Netflix.
+
+### Hardware Error
+
+In the realm of hardware, errors can occur within data centers. To mitigate this, redundancy is key. For instance, disks can be configured in RAID (Redundant Array of Independent Disks) to prevent data loss. Similarly, backup power supplies, such as batteries and diesel generators, can ensure continuity in the face of power disruptions.
+
+With the advent of distributed systems, tolerating hardware failures has become easier. Even if one machine fails, others in the cluster can take over, ensuring the service remains up and running.
+
+### Software Error
+
+Software errors are usually a result of bugs in the system. These errors can cause faults in the operation of the software, which may, in turn, lead to system failure. Common examples include:
+
+- The inability to handle incorrect input.
+- Unbalanced usage of system resources, such as CPU or RAM.
+- Slowdowns or complete stoppages in service.
+
+Preventing or mitigating software errors can be accomplished through:
+
+- Thorough and regular testing.
+- Continuous monitoring of system performance.
+- Allowing processes to crash and restart, given most bugs are caused by poor error handling.
+
+### Human Error
+
+Interestingly, humans are often the most common source of errors in systems. We are fallible, and our actions can inadvertently lead to system failures.
+
+To reduce the likelihood of human error, developers can:
+
+- Provide good abstractions, interfaces, and APIs to limit the chances of making errors.
+- Establish separate staging and testing environments to isolate potential errors.
+- Thoroughly test systems at all levels (unit, integration, smoke, automated).
+- Ensure quick recovery from errors.
+- Set up clear and actionable system monitoring.
+
+### The Importance of Reliability
+
+Reliability is critical across sectors and systems, not just those involved in high-stakes operations like nuclear plants or aircraft. Many applications today form the backbone of essential services that people rely on daily.
+
+Failure in these systems can result in significant capital and time loss. Although there might be situations where reliability can be compromised to save on development or operational costs, such trade-offs should be made with careful consideration.
+
+## Scalability
+
+In the next section, we explore scalability, a term often used to describe a system's capacity to handle increased workloads. However, it's not binary -- a system is not simply scalable or not scalable. Rather, scalability involves various parameters and raises questions like: what would happen if the load on one parameter increases, or what should we do to handle an increased load on that parameter.
+
+### Describing Load
+
+When we speak of load, we are referring to different parameters such as the number of reads or writes, number of requests per unit of time, number of connections in a chat room, cache hit ratio, and many more. To comprehend the scalability of our system, it's essential first to define our system's load.
+
+Let's illustrate this with an example from Twitter:
+
+At peak times, Twitter experiences over 12k tweet post requests per second and 300k home timeline visits per second. Clearly, Twitter's scaling challenge lies more with handling home timeline visits than tweet posting.
+
+To scale this, Twitter could:
+
+1. Utilize a classic relational table approach, creating tweets, users, and followers and then making the query.
+
+2. Fan out tweets to users' home timeline tables/data.
+
+![][Imgur](https://i.imgur.com/Bb2MHVC.jpg)
+
+Twitter initially used the first approach but switched to the second as the computational load during timeline reads was high. Shifting to the second approach moves the computational overhead to tweet posts, which are less of a load problem.
+
+However, the second approach brings its own challenge: accounts with a large number of followers. These require a lot of computational resources to fan out each tweet to millions of followers. For such accounts, Twitter uses the first approach, effectively combining the two methods to handle their load efficiently.
+
+### Describing Performance
+
+Once we've described the load, we need to understand how our system performs under this load. This requires monitoring and analyzing the system, keeping track of different performance parameters like response time and throughput.
+
+Let's consider response time as our performance metric. Response times can vary significantly due to a myriad of factors such as context switching to a background process, network packet loss, garbage collector pause, or reading from disk due to a page fault.
+
+When measuring response times, averages are not a reliable metric as they don't represent the experience of all users. A better alternative is percentiles, which reveal what proportion of requests experienced a certain delay. For instance, if we look at the 95th percentile (p95), it tells us that 95% of requests experienced less delay than the indicated time.
+
+Different systems may prioritize different percentiles. For instance, Amazon aims for reasonable response times at the 99.9th percentile (p999), as slower requests often come from users with larger amounts of data, who are usually their most valuable customers. However, they found that aiming for the 99.99th percentile (p9999) was not cost-effective. Thus, determining which percentile to target should be based on your specific system and needs. Remember, reducing response time for very high percentiles may not be beneficial as they are often affected by random events beyond your control.
+
+It's crucial to measure response times from the client's perspective, due to the phenomenon of "head of line blocking." Because servers can only handle a limited number of requests at the same time, new requests have to wait in a queue. This delay can significantly impact response times at high percentiles. To properly measure this effect, you should not wait for the response of a request before sending the next one during load testing.
+
+### Approaches for Coping with Load
+
+Handling increased load effectively often necessitates rethinking your architecture, especially if the load increases by an order of magnitude or two.
+
+Two main strategies can be employed:
+
+1. **Scaling up (vertical scaling)**: This involves upgrading to a more powerful machine. This strategy is often referred to as "shared-nothing" architecture.
+
+2. **Scaling out (horizontal scaling)**: This entails adding more machines to the system. While this can handle more load, it introduces complexity due to the need for data and resource sharing across machines.
+
+A pragmatic approach often involves a combination of both: maintaining a few powerful machines can be simpler and cheaper than managing a large number of less powerful ones.
+
+Some systems are elastic, meaning they can automatically adjust their computing resources based on the load. Stateless services can be distributed fairly easily, but until recently, distributing databases was a challenge. A common strategy was to scale up a single-node database as much as possible before distributing it.
+
+It's important to note that there's no one-size-fits-all solution for scaling applications. Each scenario is unique. You may need to contend with a high number of reads or writes, a high number of requests, high throughput, or often a mix of these factors.
+
+During the early stages of a startup or an unproven market product, the focus should be on iterating quickly, with less concern for scalability. Over-optimization for scalability could end up being a waste of time if the product doesn't find traction in the market.
+
+In our subsequent posts, we'll be exploring how we can ensure maintainability of these systems while achieving reliability and scalability. Stay tuned!
+
+## Maintainability
+
+In this final section, we will be delving into the concept of maintainability. This characteristic is paramount to any system, and we can break it down into three significant traits:
+
+- **Operability**: Making it easy for the operations team to keep the system running smoothly.
+
+- **Simplicity**: Removing accidental complexity to make the system easily comprehensible for new engineers.
+
+- **Evolvability**: Ensuring that the system can easily adapt to add new features and changes.
+
+### Operability
+
+Operability refers to the ease with which a system can be maintained and managed. Here are a few ways to enhance the operability of a system:
+
+- **Visibility through Monitoring**: Providing good monitoring systems can help operations teams identify and address issues quickly, preventing major disruptions.
+
+- **Quality Documentation**: Comprehensive and up-to-date documentation is vital for the operations team to understand the system's functions, dependencies, and potential issues.
+
+- **Machine Independence**: Avoiding dependencies on specific machines allows them to be taken down for maintenance without disrupting the whole system.
+
+### Simplicity
+
+Simplicity relates to how easily a new engineer can understand the system. A complex system often exhibits several symptoms:
+
+- Explosion of the state space
+
+- Tight coupling of modules
+
+- Tangled dependencies
+
+- Inconsistent naming and terminology
+
+- Hacks or workarounds to solve issues
+
+Remember, complexity is often the root of most bugs in a system. If an engineer cannot understand the codebase, they are more likely to introduce errors.
+
+One of the most effective ways to manage complexity is through abstraction. A good abstraction hides a significant part of the implementation details behind an interface, enabling other parts to reuse it without needing to rewrite code or add further complexity.
+
+### Evolvability
+
+We live in a rapidly changing world, and our systems need to reflect that. Requirements will change, new technologies will emerge, and the people working on the product will inevitably change. Therefore, a product must be able to evolve.
+
+The ease with which you can modify a data system is closely linked to its simplicity and the effectiveness of its abstractions. Systems that are simple and easy to understand are generally easier to modify and add new features.
+
+## Summary
+
+Designing scalable and maintainable systems is a crucial yet challenging aspect of software engineering. The load parameters, performance metrics, scaling strategies, and maintainability characteristics all play a significant role in how a system can handle increased demand and adapt over time.
+
+Scalability isn't a binary concept but rather an ongoing effort to adjust and adapt to changing load requirements. Likewise, maintainability isn't about making a system that never changes but creating one that can evolve and adapt as requirements and technologies change.
+
+The most successful systems find the right balance between operability, simplicity, and evolvability. They provide their operations teams with the tools and information they need to maintain the system, are easy for engineers to understand, and can adapt and grow over time.
+
+Finally, it's important to remember that there's no one-size-fits-all approach to building scalable and maintainable systems. Each system has its unique challenges and requirements, and what works for one might not work for another. It's always important to understand your system, monitor its performance, and make informed decisions based on data, not just conventional wisdom.
+
+As technology continues to evolve and grow, so too will the strategies and techniques we use to build scalable and maintainable systems. As engineers and architects, it's our job to stay informed and adapt, always aiming to build systems that can not only meet the demands of today but also be ready for the challenges of tomorrow.

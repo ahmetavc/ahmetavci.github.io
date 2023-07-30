@@ -1,0 +1,154 @@
+---
+layout: post
+title: "Designing Data-Intensive Applications: Part 2: Data Models and Query Languages"
+date: 2023-07-31 22:00:00 +0300
+categories: backend
+---
+
+# Data Models and Query Languages
+
+In software development, data models plays a crucial role. They form the very core of how we structure our code, and more importantly, how we understand and solve problems. Data models provide the blueprint that guides us in transforming an abstract problem into concrete code.
+
+One of the most invaluable tools we deploy while constructing software systems is the concept of abstraction. Why so? It's primarily because software construction is essentially a layered process. Each layer stands on top of another, and every layer communicates with those adjacent to it, hiding the complexity beneath. The glue that binds this communication together, rendering it effective, is a clean data model.
+
+## Relational Model vs Document Model
+
+As we go deeper into the world of data models, two key models emerge: the relational model and the document model. Both have unique characteristics, advantages, and limitations.
+
+### The Birth of NoSQL
+
+The emergence of NoSQL is response to several evolving factors and growing needs that the relational model (SQL) could not answer.
+
+- **Scalability**: As datasets expanded and the demand for high write throughput increased, the need for a more easily scalable model than SQL became evident.
+
+- **Open-source preference**: As the development community leaned more towards open-source software, bypassing commercial ones, the requirement for a data model that could cater to this preference was realized.
+
+- **Specialized query operations**: The relational model (SQL) couldn't handle certain types of queries effectively.
+
+- **Expressiveness**: As the restrictive nature of the relational model became more apparent, there was a growing desire for a data model that was not only more dynamic but also more expressive.
+
+### The Object-Relational Mismatch
+
+In our current software development landscape, Object-Oriented Programming (OOP) is widely common. However, a persistent challenge arises when we use relational databases in conjunction with OOP. This challenge is the incompatibility between the database's data model and the application code's object model, known as the Object-Relational Mismatch.
+
+This mismatch requires the creation of a translation layer to transform data between the two models. Tools such as Hibernate can help mitigate some of the boilerplate code, but the underlying issue persists.
+
+A simple example to illustrate this problem is that of managing resumes. A resume can be associated with a user_id, and each person has common attributes like name and age. However, when it comes to varying data like job history, educational background, and experiences, the model begins to stumble. These differences would require creating new tables and implementing join operations, leading to further incompatibility between the application code and the data model. Using JSON or XML columns is an alternative, but it sacrifices some query capabilities.
+
+![](https://i.imgur.com/4MbJv47.jpg)
+
+The ideal way to represent such data is through the JSON format. It provides superior locality—allowing you to retrieve the entire resume with a single, join-free query.
+
+In addition, JSON models better represent a tree structure, aligning with the inherent one-to-many relationships in such a data model.
+
+## Many-to-One and Many-to-Many Relationships
+
+Returning to our resume example, you might be wondering why regions and industries are represented by ids instead of plain text like "Greater Boston Area" or "Construction". The key reason for this is to standardize human-readable data and avoid duplication.
+
+There are several advantages to this:
+
+- You can update standardized data easily.
+- It promotes consistency in style and spelling across accounts.
+- It simplifies localization, allowing for easy language updates.
+- It supports better search capabilities.
+
+The decision between storing an id or text is largely driven by the goal to avoid duplication. Human-readable data, being prone to change, is best represented as an id, which holds meaning only to the database and is therefore less likely to change. By keeping text data to a minimum, we avoid potential issues such as inconsistencies and the overhead of writing updates everywhere the data occurs. This principle of reducing duplication forms the cornerstone of database normalization.
+
+However, normalization does have a downside—it introduces many-to-one relationships that can cause problems for document-based models, which typically have weak join support. You either end up duplicating data or performing joins in the application code by making multiple queries, both of which are less than ideal.
+
+Furthermore, even if the initial version of the data model fits into a join-free document, data tends to become more interconnected over time. For example, imagine you want to display organizations and schools as entities, with a pop-up display when hovered over, or you wish to add recommendations from other people with up-to-date profile pictures. This interconnectedness tends to lean more towards a relational database model.
+
+### Relational vs Document Databases Today
+
+As we have seen, document and relational databases each come with their unique set of advantages.
+
+Document databases offer:
+
+- Superior performance due to data locality
+- Greater schema flexibility
+
+On the other hand, relational databases provide:
+
+- Better join support
+- Easier handling of many-to-one and many-to-many relationships
+
+The question then becomes: which data model simplifies application code? If your data leans towards a document-like structure (like JSON) with many-to-one relationships, a document database is suitable. However, if your application features many-to-many relationships, a relational model would serve you better. If you choose a document model for the latter, you're left with the option to rely on the slower join support of the database or shift the join operations to the application code, which may complicate your codebase.
+
+For highly interconnected data, relational databases prove to be more efficient than document databases, with graph databases being the ideal choice.
+
+#### Schema Flexibility in the Document Model
+
+Document databases do not enforce a schema, creating a schema-on-read approach, while SQL follows a schema-on-write approach. This is analogous to dynamic (runtime) and static (compile-time) typing in programming languages, with schema-on-read mirroring dynamic type checking.
+
+The flexibility of schema-on-read is advantageous when making changes to your model. For instance, if you decide to split a single "name" field into separate "first" and "last" name fields, the document model allows for easy changes to new documents, while older documents can be handled in the application code.
+
+In contrast, relational databases require a migration, which is often associated with slow performance and downtime. That being said, most modern databases handle alter table operations in milliseconds nowadays, with MySQL being a notable exception since copies the whole table.
+
+Schema-on-read is especially useful when:
+
+- You have a wide variety of object types, making it inefficient to create a table for each.
+- The data structure is determined by external parties over whom you have no control.
+
+#### Data Locality for Queries
+
+Data locality is a significant advantage of document databases. Since the entire document is stored as a single string or byte (as in MongoDB's BSON), retrieving it is much faster due to storage locality. Conversely, relational models might require multiple queries or joins and multiple index lookups, leading to increased disk seek time and latency.
+
+However, this benefit is primarily applicable if you need the entire document. If not, loading the whole document into memory can be wasteful. Moreover, write operations update the whole document, so it's advisable to keep documents small and avoid operations that increase document size continuously.
+
+#### Convergence of Document and Relational Databases
+
+Interestingly, relational and document databases appear to be converging by time. Many relational databases have incorporated XML column support with indexing and querying capabilities, and they are increasingly adding JSON support. Similarly, document databases like MongoDB are enhancing their join support capabilities.
+
+This gradual blending of features is an exciting development in the world of data modeling, promising a more versatile and powerful set of tools for handling data in the future.
+
+### Query Languages for Data
+
+When discussing programming and querying languages, it's crucial to distinguish between declarative and imperative approaches.
+
+In declarative languages, you specify WHAT you want, without having to detail how to get it. For instance, SQL is a declarative language because you specify the columns, the data types, and the number of rows you want, without outlining the process the database needs to follow to retrieve this information.
+
+Conversely, most programming languages are imperative, meaning you need to explain to the computer how to achieve the desired results. Let's look at a simple example:
+
+```python
+def getSharks(animals):
+    sharks = []
+    for animal in animals:
+        if animal.isShark:
+            sharks.append(animal)
+    return sharks
+```
+
+In this Python code, we're explicitly instructing the computer on how to extract sharks from a list of animals, which classifies this as an imperative language.
+
+Declarative languages have the advantage of hiding implementation complexity. This abstraction allows underlying system changes, such as database optimizations, without affecting the language. Additionally, declarative languages lend themselves well to parallel execution because they do not stipulate a specific sequence of operations, unlike imperative languages where parallelizing predefined steps can be challenging.
+
+There are many other query languages out there, but we won't delve into them here.
+
+### Graph-Like Data Models
+
+When your data is highly interconnected with many-to-many relationships, graph data models come into their own.
+
+A graph consists of vertices (or nodes/entities) and edges (or relationships/arcs). Various real-world scenarios can be modeled as graphs:
+
+- Social networks: where people are vertices and edges indicate connections between people.
+- The web: where web pages are vertices and links are edges between pages.
+- Road or rail networks: where junction points are vertices and roads or tracks are edges.
+
+Numerous well-known algorithms operate on graph-like data models, from determining the shortest path for delivery routes to ranking web pages via the PageRank algorithm.
+
+Additionally, graphs can contain different types of objects as vertices and edges. Facebook, for instance, represents a single graph with vertices as people, organizations, events, etc., and edges representing relationships like friendships, event participation, or employment at an organization.
+
+While there are different ways of structuring graph data models, including property and triple-store models, we won't dive into technical details here.
+
+### Summary
+
+It's essential to understand that there is no one-size-fits-all solution when it comes to data models:
+
+- Document databases are particularly useful when data comes in self-contained documents, and relationships between documents are rare.
+- Graph databases shine when the data is highly interconnected.
+
+Both document and graph models share the trait of not enforcing any specific schema, offering a high degree of flexibility for applications to adapt to changes. Additionally, each data model brings with it a specific query language tailored to its unique functions.
+
+Apart from the data models and query languages discussed in this blog, there are others designed for specific needs. For example, GenBank allows searching large volumes of DNA data for specific sequences, and full-text search databases specialize in searching for text within documents.
+
+To wrap up, data-intensive applications are a broad field with a rich variety of data models and query languages. Each model and language has its strengths and weaknesses, which should be carefully considered in the context of your specific needs. As the world of data continues to evolve and expand, it's crucial to keep learning and adapting to leverage these powerful tools most effectively.
