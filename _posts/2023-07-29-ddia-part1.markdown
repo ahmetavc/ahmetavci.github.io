@@ -1,11 +1,9 @@
 ---
 layout: post
-title: "Designing Data-Intensive Applications: Part 1: Reliable, Scalable and Maintainable Applications"
+title: "Designing Data-Intensive Applications: Chapter 1: Reliable, Scalable and Maintainable Applications"
 date: 2023-07-29 22:00:00 +0300
 categories: backend
 ---
-
-# Part 1: Reliable, Scalable and Maintainable Applications
 
 In the era of data intensive applications, designing and maintaining applications that are reliable, scalable and maintainable has become crucial. In this blog post, we'll look into these core aspects of data systems.
 
@@ -73,7 +71,7 @@ To scale this, Twitter could:
 
 2. Fan out tweets to users' home timeline tables/data.
 
-![][Imgur](https://i.imgur.com/Bb2MHVC.jpg)
+![](https://i.imgur.com/Bb2MHVC.jpg)
 
 Twitter initially used the first approach but switched to the second as the computational load during timeline reads was high. Shifting to the second approach moves the computational overhead to tweet posts, which are less of a load problem.
 

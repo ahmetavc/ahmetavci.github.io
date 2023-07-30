@@ -1,11 +1,9 @@
 ---
 layout: post
-title: "Designing Data-Intensive Applications: Part 2: Data Models and Query Languages"
+title: "Designing Data-Intensive Applications: Chapter 2: Data Models and Query Languages"
 date: 2023-07-31 22:00:00 +0300
 categories: backend
 ---
-
-# Data Models and Query Languages
 
 In software development, data models plays a crucial role. They form the very core of how we structure our code, and more importantly, how we understand and solve problems. Data models provide the blueprint that guides us in transforming an abstract problem into concrete code.
 
