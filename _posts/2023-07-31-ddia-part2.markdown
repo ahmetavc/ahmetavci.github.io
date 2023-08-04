@@ -12,14 +12,14 @@ _This blog post is based on my notes taken from the book "Designing Data-Intensi
 1. Relational vs Document Model
    - The Birth of NoSQL
    - The Object-Relational Mismatch
-2. Many-to-One and Many-to-Many Relationships
-3. Relational vs Document Databases Today
+   - Many-to-One and Many-to-Many Relationships
+2. Relational vs Document Databases Today
    - Schema Flexibility in the Document Model
    - Data Locality for Queries
    - Convergence of Document and Relational Databases
-4. Query Languages for Data
-5. Graph-Like Data Models
-6. Summary
+3. Query Languages for Data
+4. Graph-Like Data Models
+5. Summary
 
 In software development, data models plays a crucial role. They form the very core of how we structure our code, and more importantly, how we understand and solve problems. Data models provide the blueprint that guides us in transforming an abstract problem into concrete code.
 
