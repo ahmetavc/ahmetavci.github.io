@@ -5,6 +5,22 @@ date: 2023-07-29 22:00:00 +0300
 categories: backend
 ---
 
+_This blog post is based on my notes taken from the book "Designing Data-Intensive Applications". While the majority of the content is based on the book, I've also incorporated some of my own thoughts, interpretations, and examples in certain areas. The intention here is to provide a concise and digestible summary of the book, rather than a comprehensive review or critique._
+
+## Table of Contents
+
+1. Relational vs Document Model
+   - The Birth of NoSQL
+   - The Object-Relational Mismatch
+2. Many-to-One and Many-to-Many Relationships
+3. Relational vs Document Databases Today
+   - Schema Flexibility in the Document Model
+   - Data Locality for Queries
+   - Convergence of Document and Relational Databases
+4. Query Languages for Data
+5. Graph-Like Data Models
+6. Summary
+
 In software development, data models plays a crucial role. They form the very core of how we structure our code, and more importantly, how we understand and solve problems. Data models provide the blueprint that guides us in transforming an abstract problem into concrete code.
 
 One of the most invaluable tools we deploy while constructing software systems is the concept of abstraction. Why so? It's primarily because software construction is essentially a layered process. Each layer stands on top of another, and every layer communicates with those adjacent to it, hiding the complexity beneath. The glue that binds this communication together, rendering it effective, is a clean data model.
@@ -39,7 +55,7 @@ The ideal way to represent such data is through the JSON format. It provides sup
 
 In addition, JSON models better represent a tree structure, aligning with the inherent one-to-many relationships in such a data model.
 
-## Many-to-One and Many-to-Many Relationships
+### Many-to-One and Many-to-Many Relationships
 
 Returning to our resume example, you might be wondering why regions and industries are represented by ids instead of plain text like "Greater Boston Area" or "Construction". The key reason for this is to standardize human-readable data and avoid duplication.
 
@@ -74,7 +90,7 @@ The question then becomes: which data model simplifies application code? If your
 
 For highly interconnected data, relational databases prove to be more efficient than document databases, with graph databases being the ideal choice.
 
-#### Schema Flexibility in the Document Model
+### Schema Flexibility in the Document Model
 
 Document databases do not enforce a schema, creating a schema-on-read approach, while SQL follows a schema-on-write approach. This is analogous to dynamic (runtime) and static (compile-time) typing in programming languages, with schema-on-read mirroring dynamic type checking.
 
@@ -87,19 +103,19 @@ Schema-on-read is especially useful when:
 - You have a wide variety of object types, making it inefficient to create a table for each.
 - The data structure is determined by external parties over whom you have no control.
 
-#### Data Locality for Queries
+### Data Locality for Queries
 
 Data locality is a significant advantage of document databases. Since the entire document is stored as a single string or byte (as in MongoDB's BSON), retrieving it is much faster due to storage locality. Conversely, relational models might require multiple queries or joins and multiple index lookups, leading to increased disk seek time and latency.
 
 However, this benefit is primarily applicable if you need the entire document. If not, loading the whole document into memory can be wasteful. Moreover, write operations update the whole document, so it's advisable to keep documents small and avoid operations that increase document size continuously.
 
-#### Convergence of Document and Relational Databases
+### Convergence of Document and Relational Databases
 
 Interestingly, relational and document databases appear to be converging by time. Many relational databases have incorporated XML column support with indexing and querying capabilities, and they are increasingly adding JSON support. Similarly, document databases like MongoDB are enhancing their join support capabilities.
 
 This gradual blending of features is an exciting development in the world of data modeling, promising a more versatile and powerful set of tools for handling data in the future.
 
-### Query Languages for Data
+## Query Languages for Data
 
 When discussing programming and querying languages, it's crucial to distinguish between declarative and imperative approaches.
 
@@ -122,7 +138,7 @@ Declarative languages have the advantage of hiding implementation complexity. Th
 
 There are many other query languages out there, but we won't delve into them here.
 
-### Graph-Like Data Models
+## Graph-Like Data Models
 
 When your data is highly interconnected with many-to-many relationships, graph data models come into their own.
 
@@ -138,7 +154,7 @@ Additionally, graphs can contain different types of objects as vertices and edge
 
 While there are different ways of structuring graph data models, including property and triple-store models, we won't dive into technical details here.
 
-### Summary
+## Summary
 
 It's essential to understand that there is no one-size-fits-all solution when it comes to data models:
 
