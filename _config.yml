@@ -21,7 +21,7 @@
 title: Ahmet Avci 
 email: ahmetabdullahavci@gmail.com
 description: >- # this means to ignore newlines until "baseurl:"
-  I am a software engineer, welcome to my website!
+  Hey, welcome to my website! Here, you can learn more about me, as well as delve into scalable distributed systems and blockchain world.
 baseurl: "" # the subpath of your site, e.g. /blog
 url: "https://www.avciahmet.com" # the base hostname & protocol for your site, e.g. http://example.com
 twitter_username: ahmetavcc
