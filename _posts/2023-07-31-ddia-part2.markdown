@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "Designing Data-Intensive Applications: Chapter 2: Data Models and Query Languages"
-date: 2023-07-29 22:00:00 +0300
+date: 2023-07-31 22:00:00 +0300
 categories: backend
 ---
 
@@ -49,7 +49,7 @@ This mismatch requires the creation of a translation layer to transform data bet
 
 A simple example to illustrate this problem is that of managing resumes. A resume can be associated with a user_id, and each person has common attributes like name and age. However, when it comes to varying data like job history, educational background, and experiences, the model begins to stumble. These differences would require creating new tables and implementing join operations, leading to further incompatibility between the application code and the data model. Using JSON or XML columns is an alternative, but it sacrifices some query capabilities.
 
-![](https://imgur.com/a/xnnVgb4)
+![](https://i.imgur.com/QdTBN4B.png)
 
 The ideal way to represent such data is through the JSON format. It provides superior locality—allowing you to retrieve the entire resume with a single, join-free query.
 

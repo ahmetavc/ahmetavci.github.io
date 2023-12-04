@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "Designing Data-Intensive Applications: Chapter 3: Storage and Retrieval"
-date: 2023-12-04 22:00:00 +0300
+date: 2023-12-03 22:00:00 +0300
 categories: backend
 ---
 
@@ -137,7 +137,7 @@ Fixed-Size Pages: Unlike the variable-sized segments of SSTables, B-Trees use fi
 Page Identification and Structure: Each page in a B-Tree can be identified by its location or address, allowing pages to reference other pages, similar to pointers. The tree's root page contains key ranges pointing to child pages, with each level of the tree structured similarly.
 Search Operation: To locate a key, the search starts from the root and continues down to the leaf nodes, where the actual key-value pairs are stored. The number of child page references in a page, known as the branching factor, is usually in the hundreds.
 
-![](https://imgur.com/a/9SReNlf)
+![](https://i.imgur.com/fX1KbSt.png)
 
 #### Making B-Trees reliable
 
@@ -199,13 +199,13 @@ OLTP (Online Transaction Processing) systems are designed to manage end-user cen
 
 In contrast, OLAP (Online Analytic Processing) caters to analysts who query data to derive meaningful insights for informed business decisions. OLAP databases focus more on processing large volumes of data and running complex queries, rather than optimizing for write performance and ACID properties. OLAP is used for data mining, business reporting, complex analytical calculations, and predictive analysis.
 
-![](https://imgur.com/a/WHcga5J)
+![](https://i.imgur.com/G01VN5d.png)
 
 ### Data Warehousing
 
 A data warehouse is a central repository of integrated data from one or more disparate sources. Initially, relational databases were used for both transactional and analytical processing. However, due to performance degradation caused by complex analytical queries on transactional databases, and the inefficiency of transactional databases for analytics, the need to separate these functions emerged. Data warehouses are typically updated through event listening from the main application database or batch processing.
 
-![](https://imgur.com/a/5Mcyzn7)
+![](https://i.imgur.com/SmokuPj.png)
 
 ### Schemas for Analytics: Stars and Snowflakes
 
@@ -230,7 +230,7 @@ Materialized Views: Unlike virtual views, which are just saved queries, material
 Data Cubes: Data cubes are an extension of materialized views and store results of multi-dimensional queries. They provide a means to model and view data along multiple dimensions, which is highly beneficial for complex analytical queries.
 In summary, the choice between OLTP and OLAP systems depends on the specific needs of the application – whether the focus is on efficiently processing a large number of short transactions (OLTP) or on complex query processing across large datasets (OLAP). Understanding the differences between these two approaches is crucial for designing systems that effectively meet the diverse data processing needs of modern applications.
 
-![](https://imgur.com/a/gZ1F66D)
+![](https://i.imgur.com/IeCLsy6.png)
 
 ## Summary
 
