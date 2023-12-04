@@ -111,6 +111,7 @@ SSTables differ from append-only segment files in that they contain sorted key-v
 
 **Merging Segments**: Merging segments in SSTables is similar to merge sort, making it an efficient process.
 Indexing: Instead of keeping every key in a hash map, SSTables allow for storing just the ranges of keys, thanks to their sorted nature.
+
 **Compression and Efficiency**: Read requests that scan multiple key values can be grouped into blocks and compressed before being written to disk, reducing I/O bandwidth.
 
 _It's important to note that although binary search could be an option for fixed-size values, in practice, values in SSTables often vary in size._
