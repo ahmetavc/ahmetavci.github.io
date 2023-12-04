@@ -90,7 +90,7 @@ To scale this, Twitter could:
 
 2. Fan out tweets to users' home timeline tables/data.
 
-![](https://i.imgur.com/Bb2MHVC.jpg)
+![](https://imgur.com/a/aOOUjXN)
 
 Twitter initially used the first approach but switched to the second as the computational load during timeline reads was high. Shifting to the second approach moves the computational overhead to tweet posts, which are less of a load problem.
 
