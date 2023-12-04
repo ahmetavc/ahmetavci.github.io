@@ -78,39 +78,45 @@ However, the question arises: what about the ever-growing size of the files due 
 
 Several crucial details ensure the practicality and efficiency of this approach:
 
-File Format: A binary format is ideal, starting with encoding the length of a string in bytes, followed by the actual string.
-Deleting Records: Implement a special 'delete' record, often known as a tombstone, for each key that needs to be removed. These records are particularly useful when merging log segments, allowing for the efficient deletion of keys.
-Crash Recovery: In the event of a system crash, the in-memory hash-map is lost. Reconstructing this hash-map requires reading all the segments, which can be time-consuming. Bitcask addresses this issue by periodically taking snapshots of the hash-map and saving them to disk.
-Partially Written Records: The database might crash during writes, leading to partially written records. Bitcask solves this by using checksums, which helps in detecting and ignoring corrupted records.
-Concurrency Control: The append-only nature of this system simplifies concurrency control. It allows for a single write thread while multiple read threads can operate simultaneously.
+**File Format**: A binary format is ideal, starting with encoding the length of a string in bytes, followed by the actual string.
+**Deleting Records**: Implement a special 'delete' record, often known as a tombstone, for each key that needs to be removed. These records are particularly useful when merging log segments, allowing for the efficient deletion of keys.
+**Crash Recovery**: In the event of a system crash, the in-memory hash-map is lost. Reconstructing this hash-map requires reading all the segments, which can be time-consuming. Bitcask addresses this issue by periodically taking snapshots of the hash-map and saving them to disk.
+**Partially Written Records**: The database might crash during writes, leading to partially written records. Bitcask solves this by using checksums, which helps in detecting and ignoring corrupted records.
+
+**Concurrency Control**: The append-only nature of this system simplifies concurrency control. It allows for a single write thread while multiple read threads can operate simultaneously.
+
 An append-only log structure might appear inefficient compared to updating records in place. However, append-only designs offer considerable performance benefits:
 
-Sequential Disk Writes: Append-only writes translate to sequential disk writes, which are far more efficient than random writes, especially on HDDs. They are also preferable on SSDs.
-Simplified Concurrency and Crash Recovery: Since records are not being mutated, there are no concerns about records being partially old and partially updated. This simplicity aids in concurrency control and makes crash recovery more straightforward.
-Avoiding Data Fragmentation: Regularly merging old segments prevents the problem of data file fragmentation over time.
+**Sequential Disk Writes**: Append-only writes translate to sequential disk writes, which are far more efficient than random writes, especially on HDDs. They are also preferable on SSDs.
+**Simplified Concurrency and Crash Recovery**: Since records are not being mutated, there are no
+concerns about records being partially old and partially updated. This simplicity aids in concurrency control and makes crash recovery more straightforward.
+**Avoiding Data Fragmentation**: Regularly merging old segments prevents the problem of data file fragmentation over time.
+
 However, it's important to note that hash tables have their limitations:
 
-Memory Constraints: The entire hash table must reside in memory. If you have a large number of keys, this can become a problem. Managing a performant hash table on disk is challenging, and resolving collisions can be complex and resource-intensive.
-Inefficiency with Range Queries: Hash tables are not designed for efficient range queries. To execute a range query, each key within the range must be individually looked up, which can be time-consuming.
+**Memory Constraints**: The entire hash table must reside in memory. If you have a large number of keys, this can become a problem. Managing a performant hash table on disk is challenging, and resolving collisions can be complex and resource-intensive.
+**Inefficiency with Range Queries**: Hash tables are not designed for efficient range queries. To execute a range query, each key within the range must be individually looked up, which can be time-consuming.
+
 In summary, while hash indexes offer significant improvements in data retrieval speed, they come with their own set of challenges and limitations. Understanding these trade-offs is crucial for application developers in choosing the right indexing strategy for their specific database needs.
 
 ### SSTables and LSM-Trees
 
 SSTables differ from append-only segment files in that they contain sorted key-value pairs. This sorting presents both challenges and advantages:
 
-Merging Segments: Merging segments in SSTables is similar to merge sort, making it an efficient process.
+**Merging Segments**: Merging segments in SSTables is similar to merge sort, making it an efficient process.
 Indexing: Instead of keeping every key in a hash map, SSTables allow for storing just the ranges of keys, thanks to their sorted nature.
-Compression and Efficiency: Read requests that scan multiple key values can be grouped into blocks and compressed before being written to disk, reducing I/O bandwidth.
-It's important to note that although binary search could be an option for fixed-size values, in practice, values in SSTables often vary in size.
+**Compression and Efficiency**: Read requests that scan multiple key values can be grouped into blocks and compressed before being written to disk, reducing I/O bandwidth.
+
+_It's important to note that although binary search could be an option for fixed-size values, in practice, values in SSTables often vary in size._
 
 #### Constructing and Maintaining SSTables
 
 Maintaining a sorted structure on disk (like B-trees) is challenging, so SSTables employ a different approach:
 
-In-Memory Sorted Tree: New key-value pairs are first added to an in-memory sorted tree (such as a red-black tree).
-Writing to Disk: Once the in-memory tree reaches a certain size, it's written to disk as an SSTable in a background process. Since the tree is already sorted, this process is efficient.
-Retrieval Process: To retrieve data, the system first checks the in-memory tree, then the disk.
-Crash Recovery: To handle crashes, a write-ahead log on disk can be used to rebuild the in-memory tree.
+**In-Memory Sorted Tree**: New key-value pairs are first added to an in-memory sorted tree (such as a red-black tree).
+**Writing to Disk**: Once the in-memory tree reaches a certain size, it's written to disk as an SSTable in a background process. Since the tree is already sorted, this process is efficient.
+**Retrieval Process**: To retrieve data, the system first checks the in-memory tree, then the disk.
+**Crash Recovery**: To handle crashes, a write-ahead log on disk can be used to rebuild the in-memory tree.
 
 #### Making an LSM-tree out of SSTables
 
@@ -122,10 +128,10 @@ Lucene, a full-text search indexing engine used by Elasticsearch, employs LSM-tr
 
 Optimizing read and write operations in LSM-trees involves several techniques:
 
-Bloom Filters: To speed up reads, bloom filters can be used. These probabilistic data structures can definitively indicate if a key is not in a set, although they may give false positives. Cassandra uses bloom filters for efficient key lookups.
-Compaction Strategies: There are various approaches to compaction in LSM-trees:
-Size-Tiered Compaction: This involves merging smaller, newer SSTables into larger, older ones.
-Leveled Compaction: Here, key ranges are divided into smaller SSTables, and older data is moved to separate levels, allowing for more incremental compaction and reduced disk space usage.
+**Bloom Filters**: To speed up reads, bloom filters can be used. These probabilistic data structures can definitively indicate if a key is not in a set, although they may give false positives. Cassandra uses bloom filters for efficient key lookups.
+**Compaction Strategies**: There are various approaches to compaction in LSM-trees:
+**Size-Tiered Compaction**: This involves merging smaller, newer SSTables into larger, older ones.
+**Leveled Compaction**: Here, key ranges are divided into smaller SSTables, and older data is moved to separate levels, allowing for more incremental compaction and reduced disk space usage.
 
 The basic idea behind LSM-trees – keeping cascaded SSTables merged in the background – is simple yet highly effective. This structure provides fast range queries due to the sorted nature of data and supports high write throughput because of sequential disk writes. Even with massive datasets, LSM-trees maintain impressive performance, making them a popular choice in modern database systems.
 
@@ -133,37 +139,37 @@ The basic idea behind LSM-trees – keeping cascaded SSTables merged in the back
 
 B-Trees have been a popular index data structure since the 1970s, known for their efficiency in key-value pair storage and retrieval. Like SSTables, B-Trees keep key-value pairs sorted, enabling efficient lookups and range queries. However, the design philosophy of B-Trees differs significantly from that of SSTables:
 
-Fixed-Size Pages: Unlike the variable-sized segments of SSTables, B-Trees use fixed-size pages, aligning with the underlying disk structure. Each write operation in a B-Tree involves rewriting the entire page.
-Page Identification and Structure: Each page in a B-Tree can be identified by its location or address, allowing pages to reference other pages, similar to pointers. The tree's root page contains key ranges pointing to child pages, with each level of the tree structured similarly.
-Search Operation: To locate a key, the search starts from the root and continues down to the leaf nodes, where the actual key-value pairs are stored. The number of child page references in a page, known as the branching factor, is usually in the hundreds.
+**Fixed-Size Pages**: Unlike the variable-sized segments of SSTables, B-Trees use fixed-size pages, aligning with the underlying disk structure. Each write operation in a B-Tree involves rewriting the entire page.
+**Page Identification and Structure**: Each page in a B-Tree can be identified by its location or address, allowing pages to reference other pages, similar to pointers. The tree's root page contains key ranges pointing to child pages, with each level of the tree structured similarly.
+**Search Operation**: To locate a key, the search starts from the root and continues down to the leaf nodes, where the actual key-value pairs are stored. The number of child page references in a page, known as the branching factor, is usually in the hundreds.
 
 ![](https://i.imgur.com/fX1KbSt.png)
 
 #### Making B-Trees reliable
 
-Update Speed: Updating a page in a B-Tree is generally slower than in SSTables due to the immutability of the latter. The mechanical operations involved in hard drive updates (like moving the disk head) make writes slower in B-Trees.
-Crash Consistency: B-Trees face challenges in maintaining consistency, especially during multi-page updates. Databases typically use a write-ahead log (WAL) to record changes before applying them to the B-Tree, ensuring data consistency in case of crashes.
-Concurrency Control: B-Trees use latches (lightweight locks) to maintain consistency during concurrent reads and writes, a challenge not faced by SSTables due to their immutable nature.
+**Update Speed**: Updating a page in a B-Tree is generally slower than in SSTables due to the immutability of the latter. The mechanical operations involved in hard drive updates (like moving the disk head) make writes slower in B-Trees.
+**Crash Consistency**: B-Trees face challenges in maintaining consistency, especially during multi-page updates. Databases typically use a write-ahead log (WAL) to record changes before applying them to the B-Tree, ensuring data consistency in case of crashes.
+**Concurrency Control**: B-Trees use latches (lightweight locks) to maintain consistency during concurrent reads and writes, a challenge not faced by SSTables due to their immutable nature.
 
 #### Optimizing B-Trees
 
-Copy-On-Write: Some databases employ a copy-on-write scheme, where updates are made to new pages, with parent pages updated atomically to point to these new locations. This approach also addresses concurrency issues.
-Space Efficiency: B-Trees can abbreviate keys on non-leaf pages to indicate ranges, saving space. Additionally, databases attempt to place leaf node pages sequentially to speed up range queries.
-Sibling Pointers: Adding pointers to sibling pages can facilitate quicker key scanning.
+**Copy-On-Write**: Some databases employ a copy-on-write scheme, where updates are made to new pages, with parent pages updated atomically to point to these new locations. This approach also addresses concurrency issues.
+**Space Efficiency**: B-Trees can abbreviate keys on non-leaf pages to indicate ranges, saving space. Additionally, databases attempt to place leaf node pages sequentially to speed up range queries.
+**Sibling Pointers**: Adding pointers to sibling pages can facilitate quicker key scanning.
 
 ### Comparing B-Trees and LSM-Trees
 
 #### Advantages of LSM-Trees
 
-Write Amplification: B-Trees often write data multiple times (to WAL and the page itself), leading to write amplification, which is particularly detrimental to SSDs. LSM-Trees, with their background merging and compaction, have lower write amplification.
-High Write Throughput: LSM-Trees excel in write throughput due to lower write amplification and the efficiency of sequential writes.
-Space Efficiency: Through merging and compaction, LSM-Trees typically use disk space more efficiently than B-Trees, which may leave some pages partially unused.
+**Write Amplification**: B-Trees often write data multiple times (to WAL and the page itself), leading to write amplification, which is particularly detrimental to SSDs. LSM-Trees, with their background merging and compaction, have lower write amplification.
+**High Write Throughput**: LSM-Trees excel in write throughput due to lower write amplification and the efficiency of sequential writes.
+**Space Efficiency**: Through merging and compaction, LSM-Trees typically use disk space more efficiently than B-Trees, which may leave some pages partially unused.
 
 #### Downsides of LSM-Trees
 
-Resource Competition: The background compaction process in LSM-Trees can compete with read and write operations for disk resources, potentially impacting performance.
-Compaction Under High Write Load: In situations with high write throughput and limited disk resources, compaction might not keep pace, leading to growing segmented files and potential performance issues if not properly managed.
-Key Duplication: Unlike B-Trees, where a key appears only once, LSM-Trees might have key duplications across segments.
+**Resource Competition**: The background compaction process in LSM-Trees can compete with read and write operations for disk resources, potentially impacting performance.
+**Compaction Under High Write Load**: In situations with high write throughput and limited disk resources, compaction might not keep pace, leading to growing segmented files and potential performance issues if not properly managed.
+**Key Duplication**: Unlike B-Trees, where a key appears only once, LSM-Trees might have key duplications across segments.
 Despite the growing popularity of LSM-Trees, B-Trees have proven their effectiveness across various workloads and remain a vital component of database systems. Both structures have their unique advantages and challenges, making them suitable for different types of applications and scenarios.
 
 ### Other Indexing Structures
@@ -174,12 +180,13 @@ While we have focused primarily on key-value indexes, which function like primar
 
 There are two main approaches to storing values in an index:
 
-Storing Actual Data: The first method involves storing the actual row (document, vertex) within the index value part.
-Storing References: The second approach is to store a reference to the data in the index, with the actual data kept in a heap file. This file can store data in various orders, such as append-only, and can also track deletions.
+**Storing Actual Data**: The first method involves storing the actual row (document, vertex) within the index value part.
+**Storing References**: The second approach is to store a reference to the data in the index, with the actual data kept in a heap file. This file can store data in various orders, such as append-only, and can also track deletions.
+
 Heap files are popular as they avoid data duplication, particularly useful when multiple secondary indexes are involved. When updating data without changing the key, heap files are efficient since only one location needs updating, unless the data size changes significantly, if its larger then it becomes a problem since it needs to be moved to another place and index needs to be updated.
 
-Clustered Indexes: Sometimes, the overhead of an additional read from a heap file is too costly, so the data is stored directly in the index. These are known as clustered indexes.
-Covering Indexes: A middle ground between heap files and clustered indexes is the covering index, which includes some column data to answer queries directly from the index. However, this approach can slow down write operations due to the additional data handling.
+**Clustered Indexes**: Sometimes, the overhead of an additional read from a heap file is too costly, so the data is stored directly in the index. These are known as clustered indexes.
+**Covering Indexes**: A middle ground between heap files and clustered indexes is the covering index, which includes some column data to answer queries directly from the index. However, this approach can slow down write operations due to the additional data handling.
 
 #### Multi-Column indexes
 
@@ -215,19 +222,20 @@ Data warehouse schemas usually consist of a central fact table (e.g., sales data
 
 Column-oriented storage is pivotal in optimizing analytics queries, especially when queries target only a few columns but need to scan many rows.
 
-Row-Oriented vs. Column-Oriented: In OLTP systems, databases are typically row-oriented, meaning all values of a row are stored together. However, for analytical queries that don't require all columns, this approach is inefficient. Column-oriented databases store each column’s values together, allowing for more efficient querying of specific columns.
-Compression: Column-oriented storage also benefits from better compression, as columns often contain repeated values. Techniques like bitmap encoding are used for compression.
+**Row-Oriented vs. Column-Oriented**: In OLTP systems, databases are typically row-oriented, meaning all values of a row are stored sequentially on disk. However, this would be cumbersome in analytics queries since they don't need all columns of a row. In this type of queries, row oriented db's load all row in to the memory, parse in and filter out unnecessary columns, which would take long time. Instead, column-oriented databases store each column’s values together, allowing for more efficient querying of specific columns.
+**Compression**: Column-oriented storage also benefits from better compression, as columns often contain repeated values. Techniques like bitmap encoding are used for compression.
 
 ### Sort Order and Writing in Column Storage
 
-Sort Order: In column-oriented databases, sorting is column-based. The most queried columns are typically chosen for sorting to optimize query performance.
-Multiple Sort Orders: Using different sort orders can lead to data duplication, but it can be beneficial for query optimization in systems where redundancy is already present for reliability.
-Writing to Column Storage: Writing to a column-oriented database can be more complex. LSM-trees approach come in handy here as well, where writes are initially directed to an in-memory store. The data is later written to disk in bulk.
+**Sort Order**: In column-oriented databases, sorting is column-based. The most queried columns are typically chosen for sorting to optimize query performance.
+**Multiple Sort Orders**: Using different sort orders can lead to data duplication, but it can be beneficial for query optimization in systems where redundancy is already present for reliability.
+**Writing to Column Storage**: Writing to a sorted column-oriented database can be more complex. LSM-trees approach come in handy here as well, where writes are initially directed to an in-memory store. The data is later written to disk in bulk.
 
 ### Aggregation: Data Cubes and Materialized Views
 
-Materialized Views: Unlike virtual views, which are just saved queries, materialized views store actual query results. They are particularly useful in data warehouses where write speed is less critical than query performance.
-Data Cubes: Data cubes are an extension of materialized views and store results of multi-dimensional queries. They provide a means to model and view data along multiple dimensions, which is highly beneficial for complex analytical queries.
+**Materialized Views**: Unlike virtual views, which are just saved queries, materialized views store actual query results. They are particularly useful in data warehouses where write speed is less critical than query performance.
+**Data Cubes**: Data cubes are an extension of materialized views and store results of multi-dimensional queries. They provide a means to model and view data along multiple dimensions, which is highly beneficial for complex analytical queries.
+
 In summary, the choice between OLTP and OLAP systems depends on the specific needs of the application – whether the focus is on efficiently processing a large number of short transactions (OLTP) or on complex query processing across large datasets (OLAP). Understanding the differences between these two approaches is crucial for designing systems that effectively meet the diverse data processing needs of modern applications.
 
 ![](https://i.imgur.com/IeCLsy6.png)
